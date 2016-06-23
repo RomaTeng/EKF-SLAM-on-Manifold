@@ -7,7 +7,7 @@ clear;
 config;
 
 % step size
-t = 0:0.5:300;
+t = 0:1:300;
 poses = gen_trajectory(t);
 
 % plot 3d x y z
