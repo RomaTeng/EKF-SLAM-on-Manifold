@@ -10,7 +10,7 @@ addpath('datagen_3d/');
 addpath('left_iekf_3d/');
 addpath('lie_utils/');
 addpath('ekf_3d/');
-
+addpath('ideal_ekf_3d/');
 % generate simulation data
 % data = gen_data();
 load('data');
@@ -21,6 +21,10 @@ fprintf('Generate %d poses and %d landmarks\n', nposes, nlandmarks);
 % left iekf-slam
 LIEKF_result = LIEKF_SLAM( data );
 LIEKF_plot_estimation( LIEKF_result, data );
+
+% ideal ekf-slam
+Ideal_EKF_result = Ideal_EKF_SLAM( data );
+Ideal_EKF_plot_estimation( Ideal_EKF_result, data );
 
 % ekf-slam
 EKF_result = EKF_SLAM( data );
