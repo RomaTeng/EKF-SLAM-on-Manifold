@@ -1,4 +1,5 @@
-%% generate data according to Teng's request
+function data = gen_data()
+% generate data 
 
 close all;
 clear;
@@ -115,6 +116,7 @@ for i = 1:size(poses.position, 2) % for pose
     end
     obsers{i} = obseri;
 end
+title('3D Simulation Data Generator');
 
 
 %% convert data format
@@ -174,4 +176,6 @@ data.odom_cov = ODOM_NOISE; % odometry covariance matrix
 data.landmarks=landmarks;
 data.poses=poses;
 save data data
+
+clearvars -except data;
 
