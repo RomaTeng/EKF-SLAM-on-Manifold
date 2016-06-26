@@ -1,4 +1,4 @@
-function [Estimation_X] = EKFonestepPropagate(Estimation_X, OdometryFromThis2Next, odoCov, Aorientation, Aposition )
+function [Estimation_X] = Ideal_EKF_propagate(Estimation_X, OdometryFromThis2Next, odom_sigma, Aorientation, Aposition )
 % function [Estimation_X] = LEKFonestepPropagate(Estimation_X, OdometryFromThis2Next, odoCov )
 % Estimation_X      - current state and everything
 % OdometryFromThis2Next
@@ -21,6 +21,7 @@ ExpMinusM = so3_exp(-w);
 
 
 W1 = [-Jrw zeros(3,3);zeros(3,3)  Aorientation];
+odoCov=diag([w.^2;v.^2])*odom_sigma^2;
 W1 = W1*odoCov*W1';
 
 W = sparse(3*NumberOfLandmarks+6,3*NumberOfLandmarks+6);

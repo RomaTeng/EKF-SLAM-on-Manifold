@@ -1,4 +1,4 @@
-function [Estimation_X] = EKF_propagate(Estimation_X, OdometryFromThis2Next, odoCov )
+function [Estimation_X] = EKF_propagate(Estimation_X, OdometryFromThis2Next, odom_sigma )
 % function [Estimation_X] = LEKFonestepPropagate(Estimation_X, OdometryFromThis2Next, odoCov )
 % Estimation_X      - current state and everything
 % OdometryFromThis2Next
@@ -21,6 +21,7 @@ ExpMinusM = so3_exp(-w);
 
 
 W1 = [-Jrw zeros(3,3);zeros(3,3)  orientation];
+odoCov=diag([w.^2;v.^2])*odom_sigma^2;
 W1 = W1*odoCov*W1';
 
 W = sparse(3*NumberOfLandmarks+6,3*NumberOfLandmarks+6);
@@ -32,7 +33,7 @@ A = blkdiag(temp{:});
 A(1:3,1:3) = ExpMinusM;
 A(4:6,1:3) = orientation*skew(v);
 
-
+clear temp W1 
 % final update the covariance
 Estimation_X.cov = A*Estimation_X.cov*A'+W;
 
