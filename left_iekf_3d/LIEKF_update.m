@@ -1,4 +1,4 @@
-function [Estimation_X0] = LIEKF_update(Estimation_X0, CameraMeasurementThis, obCov)
+function [Estimation_X0] = LIEKF_update(Estimation_X0, CameraMeasurementThis, obsv_sigma)
 % function [Estimation_X0, Cov_EstX0, IndexOfFeature] = LEKFonestepUpdate(Estimation_X0, CameraMeasurementThis, obCov)
 % 
 % Estimation_X0     - state vector after propagation(prediction)
@@ -56,9 +56,9 @@ NumberOfNewFeatureInThisStep = size(IndexObservedNew,1);
 if ~isempty(IndexObservedAlreadyThis)
     Z = zeros( NumberOfOldFeatureInThisStep*3 , 1); 
     Y = zeros( NumberOfOldFeatureInThisStep*3 , 1); 
-    H = zeros(3*NumberOfOldFeatureInThisStep, 6+3*NumberOfFeature);
+    H = zeros(3*NumberOfOldFeatureInThisStep, 6+3*NumberOfFeature);   
     
-    temp = repmat({obCov}, NumberOfOldFeatureInThisStep,1 );
+    temp = repmat({eye(3)}, NumberOfOldFeatureInThisStep,1 );
     R = blkdiag(temp{:});
     
     % update old features
@@ -71,7 +71,8 @@ if ~isempty(IndexObservedAlreadyThis)
         Z(3*i-2:3*i,1 ) = CameraMeasurementThis(ind2,1);
         
         H(3*i-2:3*i, 1:6) = [-skew(Y(3*i-2:3*i,1)) eye(3)];
-        H(3*i-2:3*i, 6+3*ind-2:6+3*ind) = -eye(3);         
+        H(3*i-2:3*i, 6+3*ind-2:6+3*ind) = -eye(3);  
+        R(3*i-2:3*i,3*i-2:3*i) = diag(CameraMeasurementThis(ind2,1).^2)*obsv_sigma^2;
     end    
     
     % question @RomaTeng, different computaton scheme
@@ -93,7 +94,7 @@ end
 % new feature into state and covariance
 if ~isempty(IndexObservedNew)
     % copy previous covariance
-    temp    = repmat({obCov}, NumberOfNewFeatureInThisStep, 1 );
+    temp    = repmat({eye(3)}, NumberOfNewFeatureInThisStep, 1 );
     tempKK  = blkdiag(temp{:});
     Sigma   = blkdiag(Estimation_X0.cov,tempKK);
     KK      = eye(6+3*(NumberOfFeature+NumberOfNewFeatureInThisStep));
@@ -107,7 +108,9 @@ if ~isempty(IndexObservedNew)
 
         Estimation_X0.landmarks(1:3,NumberOfFeature+i) = Estimation_X0.orientation*nf+Estimation_X0.position;
         KK( 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i,1:6 ) = [-skew(nf) eye(3)];  
+        tempKK(3*i-2:3*i,3*i-2:3*i)=diag(nf.^2)*obsv_sigma^2;
     end
+    Sigma   = blkdiag(Estimation_X0.cov,tempKK);
     Estimation_X0.cov = KK*Sigma*KK';
 end
 

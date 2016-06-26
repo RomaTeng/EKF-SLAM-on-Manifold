@@ -12,7 +12,7 @@ addpath('lie_utils/');
 addpath('ekf_3d/');
 addpath('ideal_ekf_3d/');
 % generate simulation data
-% data = gen_data();
+%data = gen_data();
 load('data');
 nposes = size(data.poses.position, 2);
 nlandmarks = size(data.landmarks, 1);

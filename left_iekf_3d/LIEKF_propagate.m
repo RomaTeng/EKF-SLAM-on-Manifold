@@ -1,4 +1,4 @@
-function [Estimation_X] = LIEKF_propagate(Estimation_X, OdometryFromThis2Next, odoCov )
+function [Estimation_X] = LIEKF_propagate(Estimation_X, OdometryFromThis2Next, odom_sigma )
 % function [Estimation_X] = LEKFonestepPropagate(Estimation_X, OdometryFromThis2Next, odoCov )
 % Estimation_X      - current state and everything
 % OdometryFromThis2Next
@@ -9,6 +9,9 @@ function [Estimation_X] = LIEKF_propagate(Estimation_X, OdometryFromThis2Next, o
     v = OdometryFromThis2Next(1:3);
     w = OdometryFromThis2Next(4:6);
 
+    % compute odometry covariance matrix
+    odoCov=diag([w.^2;v.^2])*odom_sigma^2;
+    
     % update position and orientation
     Estimation_X.position = Estimation_X.position+Estimation_X.orientation*v;
     Estimation_X.orientation = Estimation_X.orientation*so3_exp(w);

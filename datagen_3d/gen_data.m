@@ -173,6 +173,9 @@ data.state = ztfile; % state vector
 data.obse_cov = OBSV_NOISE; % observation covariance matrix
 data.odom_cov = ODOM_NOISE; % odometry covariance matrix
 
+data.odom_sigma = SIGMA_ODOM;
+data.obsv_sigma = SIGMA_OBSV;
+
 data.landmarks=landmarks;
 data.poses=poses;
 save data data

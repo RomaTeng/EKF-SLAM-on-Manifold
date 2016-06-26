@@ -10,6 +10,9 @@ data_matrix = data.state;
 odo_cov = data.odom_cov;   % constant variable
 obs_cov = data.obse_cov;   % constant variable
 
+odom_sigma = data.odom_sigma;
+obsv_sigma = data.obsv_sigma;
+
 %%%%%%%%%%%%%%%%%%%% Estimation_X is used to save the state in each step %%%%%%%%%%%%%%%%%%%%  
 %%%%%%%%%%%%%%%%%%%% In every step, all elements of Estimation_X will be changed %%%%%%%%%%%%
 estimation_x.orientation = data.poses.orientation(1:3,1:3);
@@ -40,18 +43,18 @@ for i = 0:n_steps
         if m > 6
             CameraMeasurementThis = [ data_matrix( IndexOfCurrentStepInDataMatrix(1): IndexOfCurrentStepInDataMatrix(m-6) , 1 ),...
                                       data_matrix( IndexOfCurrentStepInDataMatrix(1): IndexOfCurrentStepInDataMatrix(m-6) , 3 )];    
-            [estimation_x] = LIEKF_update(estimation_x, CameraMeasurementThis, obs_cov );
+            [estimation_x] = LIEKF_update(estimation_x, CameraMeasurementThis, obsv_sigma );
         end
         
         estimation_results{i+1} = estimation_x;
         
         % propagation using odometry info
-        [estimation_x] = LIEKF_propagate(estimation_x, OdometryFromThis2Next, odo_cov );
+        [estimation_x] = LIEKF_propagate(estimation_x, OdometryFromThis2Next, odom_sigma );
 
     else
         if m > 6
             CameraMeasurementThis = [ data_matrix( IndexOfCurrentStepInDataMatrix(1): IndexOfCurrentStepInDataMatrix(end) , 1 ) , data_matrix( IndexOfCurrentStepInDataMatrix(1): IndexOfCurrentStepInDataMatrix(end) , 3 )];
-           [estimation_x] = LIEKF_update(estimation_x, CameraMeasurementThis, obs_cov );
+           [estimation_x] = LIEKF_update(estimation_x, CameraMeasurementThis, obsv_sigma );
         end
         estimation_results{i+1} = estimation_x;
     end
