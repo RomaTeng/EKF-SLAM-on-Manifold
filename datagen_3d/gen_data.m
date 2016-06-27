@@ -66,7 +66,8 @@ for i = 1:size(poses.position, 2)-1;
         while(max(abs(noise_rand))> 1.5)
            noise_rand=randn(6,1);
         end
-       noise_odo=ODOM_NOISE^(1/2)*noise_rand;
+       %noise_odo=ODOM_NOISE^(1/2)*noise_rand;
+       noise_odo = [translation_diff; rotation_diff_so3]*SIGMA_ODOM.*randn(6, 1);
        rotation_diff_so3=rotation_diff_so3+noise_odo(4:6);
        translation_diff=translation_diff+noise_odo(1:3);
     end
@@ -108,7 +109,8 @@ for i = 1:size(poses.position, 2) % for pose
              while(max(abs(noise_rand))> 1.5)
                  noise_rand=randn(3,1);
              end
-                noise_ob=OBSV_NOISE^(1/2)*noise_rand;
+                %noise_ob=OBSV_NOISE^(1/2)*noise_rand;
+                noise_ob = obserij(2:4)*SIGMA_OBSV.*randn(3, 1);
                 obserij(2:4)=obserij(2:4)+noise_ob';  %change
             end
             obseri = [obseri; obserij];
