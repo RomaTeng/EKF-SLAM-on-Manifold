@@ -37,6 +37,7 @@ EKF_NEES.pose = [];
 EKF_NEES.orientation = [];
 
 for i = 1:niter
+    tic;
     data = gen_data( 0 );
     save(['data/', int2str(i)], 'data');
     nposes = size(data.poses.position, 2);
@@ -66,7 +67,8 @@ for i = 1:niter
     % EKF_plot_estimation( EKF_result, data );
     [EKF_RMS.position(i, :), EKF_RMS.orientation(i, :), EKF_NEES.pose(i, :), EKF_NEES.orientation(i, :)] = ...
         EKF_plot_rms_nees( EKF_result, data, 0 );
-
+    toc;
+    
 end
 
 [RIEKF_RMS_ave, RIEKF_NEES_ave] = compute_rms_nees_ave( RIEKF_RMS, RIEKF_NEES );
@@ -74,7 +76,38 @@ end
 [Ideal_EKF_RMS_ave, Ideal_EKF_NEES_ave] = compute_rms_nees_ave( Ideal_EKF_RMS, Ideal_EKF_NEES );
 [EKF_RMS_ave, EKF_NEES_ave] = compute_rms_nees_ave( EKF_RMS, EKF_NEES );
 
+figure;
+subplot(2,2,1);
+plot(1:size(RIEKF_RMS_ave.position, 2), RIEKF_RMS_ave.position, 'r'); hold on;
+plot(1:size(LIEKF_RMS_ave.position, 2), LIEKF_RMS_ave.position, 'g'); hold on;
+plot(1:size(Ideal_EKF_RMS_ave.position, 2), Ideal_EKF_RMS_ave.position, 'b'); hold on;
+plot(1:size(EKF_RMS_ave.position, 2), EKF_RMS_ave.position, 'c'); hold on;
+legend('RIEKF', 'LIEKF', 'Ideal EKF', 'EKF', 'Location','northeast');
+title('RMS:position(meter)');xlim([0,size(RIEKF_RMS_ave.position, 2)]);
 
+subplot(2,2,2); 
+plot(1:size(RIEKF_RMS_ave.orientation, 2), RIEKF_RMS_ave.orientation, 'r'); hold on;
+plot(1:size(LIEKF_RMS_ave.orientation, 2), LIEKF_RMS_ave.orientation, 'g'); hold on;
+plot(1:size(Ideal_EKF_RMS_ave.orientation, 2), Ideal_EKF_RMS_ave.orientation, 'b'); hold on;
+plot(1:size(EKF_RMS_ave.orientation, 2), EKF_RMS_ave.orientation, 'c'); hold on;
+legend('RIEKF', 'LIEKF', 'Ideal EKF', 'EKF', 'Location','northeast');
+title('RMS:orientation(rad)');xlim([0,size(RIEKF_RMS_ave.orientation, 2)]);
+
+subplot(2,2,3);
+plot(1:size(RIEKF_NEES_ave.orientation, 2), RIEKF_NEES_ave.orientation, 'r'); hold on;
+plot(1:size(LIEKF_NEES_ave.orientation, 2), LIEKF_NEES_ave.orientation, 'g'); hold on;
+plot(1:size(Ideal_EKF_NEES_ave.orientation, 2), Ideal_EKF_NEES_ave.orientation, 'b'); hold on;
+plot(1:size(EKF_NEES_ave.orientation, 2), EKF_NEES_ave.orientation, 'c'); hold on;
+legend('RIEKF', 'LIEKF', 'Ideal EKF', 'EKF', 'Location','northeast');
+title('NEES:orientation');xlim([0,size(RIEKF_NEES_ave.orientation, 2)]);
+
+subplot(2,2,4);
+plot(1:size(RIEKF_NEES_ave.pose, 2), RIEKF_NEES_ave.pose, 'r'); hold on;
+plot(1:size(LIEKF_NEES_ave.pose, 2), LIEKF_NEES_ave.pose, 'g'); hold on;
+plot(1:size(Ideal_EKF_NEES_ave.pose, 2), Ideal_EKF_NEES_ave.pose, 'b'); hold on;
+plot(1:size(EKF_NEES_ave.pose, 2), EKF_NEES_ave.pose, 'c'); hold on;
+legend('RIEKF', 'LIEKF', 'Ideal EKF', 'EKF', 'Location','northeast');
+title('NEES:pose');xlim([0,size(RIEKF_NEES_ave.pose, 2)]);
 
 
 

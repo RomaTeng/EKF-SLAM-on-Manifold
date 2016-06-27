@@ -12,8 +12,8 @@ rmsori_sum = sum(rmsall.orientation.^2, 1);
 rms.orientation = sqrt(rmsori_sum/ntests);
 
 % compute nees
-neesall_pose = neesall.pose(2:end);
-neesall_orientation = neesall.orientation(2:end);
+neesall_pose = neesall.pose(:, 2:end);
+neesall_orientation = neesall.orientation(:, 2:end);
 
 neespose_sum = sum(neesall_pose, 1);
 nees.pose = neespose_sum/ntests;
