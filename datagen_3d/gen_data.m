@@ -1,8 +1,11 @@
-function data = gen_data()
-% generate data 
-
+function data = gen_data( do_vis )
 close all;
-clear;
+
+% generate data 
+if nargin < 1
+    do_vis = 1;
+end
+
 %addpath('lie_utils/');
 config;
 
@@ -11,25 +14,27 @@ t = 0:1:300;
 poses = gen_trajectory(t);
 
 % plot 3d x y z
-figure;
-%scatter3( poses.position(1,:), poses.position(2, :), poses.position(3, :), 'r*' );
-%hold on;
-%draw axis
-axisl = 5;
-%{
-for i = 1:size(poses.euler, 2)
-    rotationi = poses.orientation((i-1)*3+1:i*3, :);
-    xdir = poses.position(:, i)+axisl*rotationi(:, 1);
-    xdir = [poses.position(:, i) xdir];
-    ydir = poses.position(:, i)+axisl*rotationi(:, 2);
-    ydir = [poses.position(:, i) ydir];
-    zdir = poses.position(:, i)+axisl*rotationi(:, 3);
-    zdir = [poses.position(:, i) zdir];
-    plot3(xdir(1,:), xdir(2,:), xdir(3,:), 'Color', 'red'); hold on;
-    plot3(ydir(1,:), ydir(2,:), ydir(3,:), 'Color', 'green'); hold on;
-    plot3(zdir(1,:), zdir(2,:), zdir(3,:), 'Color', 'blue'); hold on;
+if do_vis == 1
+    figure;
+    scatter3( poses.position(1,:), poses.position(2, :), poses.position(3, :), 'r*' );
+    hold on;
+
+    %draw axis
+    axisl = 5;
+
+    for i = 1:size(poses.euler, 2)
+        rotationi = poses.orientation((i-1)*3+1:i*3, :);
+        xdir = poses.position(:, i)+axisl*rotationi(:, 1);
+        xdir = [poses.position(:, i) xdir];
+        ydir = poses.position(:, i)+axisl*rotationi(:, 2);
+        ydir = [poses.position(:, i) ydir];
+        zdir = poses.position(:, i)+axisl*rotationi(:, 3);
+        zdir = [poses.position(:, i) zdir];
+        plot3(xdir(1,:), xdir(2,:), xdir(3,:), 'Color', 'red'); hold on;
+        plot3(ydir(1,:), ydir(2,:), ydir(3,:), 'Color', 'green'); hold on;
+        plot3(zdir(1,:), zdir(2,:), zdir(3,:), 'Color', 'blue'); hold on;
+    end
 end
-%}
 %% add random points
 n_landmarks = N_LANDMARKS;
 if ~exist('landmarks')
@@ -49,7 +54,9 @@ else
 end
 
 %% draw landmarks
-scatter3( landmarks(:, 1), landmarks(:, 2), landmarks(:, 3), 'go' ); hold on;
+if do_vis == 1
+    scatter3( landmarks(:, 1), landmarks(:, 2), landmarks(:, 3), 'go' ); hold on;
+end
 
 %% generate odom
 odoms = [];
@@ -82,17 +89,19 @@ obsers = {};
 for i = 1:size(poses.position, 2) % for pose
     posi = poses.position(:, i);
     rotationi = poses.orientation((i-1)*3+1:i*3, :);
-    
-    xdir = poses.position(:, i)+axisl*rotationi(:, 1);
-    xdir = [poses.position(:, i) xdir];
-    ydir = poses.position(:, i)+axisl*rotationi(:, 2);
-    ydir = [poses.position(:, i) ydir];
-    zdir = poses.position(:, i)+axisl*rotationi(:, 3);
-    zdir = [poses.position(:, i) zdir];
-    plot3(xdir(1,:), xdir(2,:), xdir(3,:), 'Color', 'red'); hold on;
-    plot3(ydir(1,:), ydir(2,:), ydir(3,:), 'Color', 'green'); hold on;
-    plot3(zdir(1,:), zdir(2,:), zdir(3,:), 'Color', 'blue'); hold on;
-    
+    if do_vis == 1
+
+        xdir = poses.position(:, i)+axisl*rotationi(:, 1);
+        xdir = [poses.position(:, i) xdir];
+        ydir = poses.position(:, i)+axisl*rotationi(:, 2);
+        ydir = [poses.position(:, i) ydir];
+        zdir = poses.position(:, i)+axisl*rotationi(:, 3);
+        zdir = [poses.position(:, i) zdir];
+
+        plot3(xdir(1,:), xdir(2,:), xdir(3,:), 'Color', 'red'); hold on;
+        plot3(ydir(1,:), ydir(2,:), ydir(3,:), 'Color', 'green'); hold on;
+        plot3(zdir(1,:), zdir(2,:), zdir(3,:), 'Color', 'blue'); hold on;
+    end
     zi = rotationi(:, 3)';
     obseri = [];
     for j = 1:size(landmarks, 1)
@@ -104,21 +113,21 @@ for i = 1:size(poses.position, 2) % for pose
             % hold on;
             ptjdir = rotationi'*ptjdir';
             obserij = [j, ptjdir'];
-            if 0 %ADD_NOISE == 1
-                noise_rand=randn(3,1);
-             while(max(abs(noise_rand))> 1.5)
-                 noise_rand=randn(3,1);
-             end
+            if ADD_NOISE == 1
+             %   noise_rand=randn(3,1);
+             %while(max(abs(noise_rand))> 1.5)
+             %    noise_rand=randn(3,1);
+             %end
                 %noise_ob=OBSV_NOISE^(1/2)*noise_rand;
-                noise_ob = obserij(2:4)*SIGMA_OBSV.*randn(3, 1);
-                obserij(2:4)=obserij(2:4)+noise_ob';  %change
+                noise_ob = obserij(2:4)*SIGMA_OBSV.*randn(3, 1)';
+                obserij(2:4)=obserij(2:4)+noise_ob;  %change
             end
             obseri = [obseri; obserij];
         end
     end
     obsers{i} = obseri;
 end
-title('3D Simulation Data Generator');
+%title('3D Simulation Data Generator');
 
 
 %% convert data format
@@ -180,7 +189,7 @@ data.obsv_sigma = SIGMA_OBSV;
 
 data.landmarks=landmarks;
 data.poses=poses;
-save data data
+% save data data
 
 clearvars -except data;
 

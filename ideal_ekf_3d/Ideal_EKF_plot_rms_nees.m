@@ -1,6 +1,5 @@
-function [] = Ideal_EKF_plot_rms_nees( estimation_results, data )
+function [RMS_position, RMS_orientation, NEES_pose, NEES_orientation] = Ideal_EKF_plot_rms_nees( estimation_results, data, do_vis )
 % plot rms and nees for left-invariant ekf
-figure;
 N  = size(estimation_results, 2);
 
 T = 1:N;
@@ -17,11 +16,6 @@ end
 fprintf( 'mean(RMS:Position) = %f\n', mean(RMS_position) );
 fprintf( 'mean(RMS:Orientation) = %f\n', mean(RMS_orientation) );
 
-
-subplot(2,2,1);plot(T, RMS_position);
-title('RMS:position(meter)');xlim([0,N]);
-subplot(2,2,2); plot(T,RMS_orientation);
-title('RMS:orientation(radius)');xlim([0,N]);
 
  NEES_pose=[];
  NEES_orientation=[];
@@ -46,11 +40,18 @@ end
 fprintf( 'mean(NEES:Position) = %f\n', mean(NEES_pose(2:end)) );
 fprintf( 'mean(NEES:Orientation) = %f\n', mean(NEES_orientation(2:end)) );
 
-subplot(2,2,3);
-plot(T,NEES_orientation);
-title('NEES:orientation');xlim([0,N]);
-subplot(2,2,4);
-plot(T,NEES_pose);
-title('NEES:pose');;xlim([0,N]);
+if do_vis == 1
+    figure;
+    subplot(2,2,1);plot(T, RMS_position);
+    title('RMS:position(meter)');xlim([0,N]);
+    subplot(2,2,2); plot(T,RMS_orientation);
+    title('RMS:orientation(radius)');xlim([0,N]);
+    subplot(2,2,3);
+    plot(T,NEES_orientation);
+    title('NEES:orientation');xlim([0,N]);
+    subplot(2,2,4);
+    plot(T,NEES_pose);
+    title('NEES:pose');xlim([0,N]);
+end
 
 

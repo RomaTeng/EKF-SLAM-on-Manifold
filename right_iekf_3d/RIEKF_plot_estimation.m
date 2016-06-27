@@ -1,16 +1,16 @@
-function [] = LIEKF_plot_estimation( estimation_result, data )
+function [] = LIEKF_plot_estimation( estimation_results, data )
 
-% close all
-% addpath('Math_Liegroup/');
+%close all
+%addpath('Math_Liegroup/');
 
 %% plot ground truth poses and estimated poses
 errposition = [];
-N  = size(estimation_result, 2);
+N  = size(estimation_results, 2);
 figure;
 title('Lie Group EKF: Left')
 T = 1:N;
 for i = T
-    position = estimation_result{i}.position;
+    position = estimation_results{i}.position;
     %plot3(position(1),position(2),position(3),'ro'); hold on;
     ap = data.poses.position(:,i);
     %subplot(4,2,1);
@@ -24,22 +24,23 @@ end
 %plot(T, errposition);
 %title('norm (x,y) error');
 
-N  = size(estimation_result, 2);
-NL = size(estimation_result{N}.landmarks, 2);
+N  = size(estimation_results, 2);
+NL = size(estimation_results{N}.landmarks, 2);
 
 ErrLandmark = zeros(1, NL);
 for j = 1:NL
-    ErrLandmark(j) = norm(estimation_result{N}.landmarks(1:3,j)-data.landmarks( estimation_result{N}.landmarks(4,j),1:3)');
+    ErrLandmark(j) = norm(estimation_results{N}.landmarks(1:3,j)-data.landmarks( estimation_results{N}.landmarks(4,j),1:3)');
 end
 axis equal;
 
 %% plot error in orientation
-dT = 1:N;
+%N=200;
+dT=1:N;
 ThetaVector=zeros(3,N);
 SigmaTheta=zeros(3,N);
 for j = 1:N
-    ThetaVector(:,j)=so3_log((data.poses.orientation(3*j-2:3*j,1:3))'*estimation_result{j}.orientation);
-    SigmaTheta(:,j)= [sqrt(estimation_result{j}.cov(1,1));sqrt(estimation_result{j}.cov(2,2));sqrt(estimation_result{j}.cov(3,3))];
+    ThetaVector(:,j)=so3_log(estimation_results{j}.orientation*(data.poses.orientation(3*j-2:3*j,1:3))');
+    SigmaTheta(:,j)= [sqrt(estimation_results{j}.cov(1,1));sqrt(estimation_results{j}.cov(2,2));sqrt(estimation_results{j}.cov(3,3))];
 end
 
 subplot(3,2,1)
@@ -63,12 +64,12 @@ plot(dT,-3*SigmaTheta(3,:),'r'); hold on;
 xlim([0,N]);
 title('3\sigma bound: \gamma');
 
-% figure;
+
 PositionVector=zeros(3,N);
 Sigma=zeros(3,N);
 for j = 1:N
-    PositionVector(:,j)=inv(jaco_r(-ThetaVector(:,j)))*( data.poses.orientation(3*j-2:3*j,1:3)' *(estimation_result{j}.position-data.poses.position(:,j)));
-    Sigma(:,j)= [sqrt(estimation_result{j}.cov(4,4));sqrt(estimation_result{j}.cov(5,5));sqrt(estimation_result{j}.cov(6,6))];
+    PositionVector(:,j)=inv(jaco_r(-ThetaVector(:,j)))*( (estimation_results{j}.position-estimation_results{j}.orientation*data.poses.orientation(3*j-2:3*j,1:3)' *data.poses.position(:,j)));
+    Sigma(:,j)= [sqrt(estimation_results{j}.cov(4,4));sqrt(estimation_results{j}.cov(5,5));sqrt(estimation_results{j}.cov(6,6))];
 end
 subplot(3,2,2)
 plot(dT,PositionVector(1,:),'g'); hold on;
@@ -96,4 +97,10 @@ title('3\sigma bound: z');
 ha = axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0 1], ...
           'Box','off','Visible','off','Units','normalized', 'clipping' , 'off');
 
-text(0.5, 1,'\bf Lie Group EKF: Left','HorizontalAlignment' ,'center','VerticalAlignment', 'top');
+text(0.5, 1,'\bf Lie Group EKF: Right','HorizontalAlignment' ,'center','VerticalAlignment', 'top');
+
+
+
+
+
+

@@ -8,15 +8,21 @@ close all;
 % add directories
 addpath('datagen_3d/');
 addpath('left_iekf_3d/');
+addpath('right_iekf_3d/');
 addpath('lie_utils/');
 addpath('ekf_3d/');
 addpath('ideal_ekf_3d/');
 % generate simulation data
-%data = gen_data();
+%data = gen_data(0);
 load('data');
 nposes = size(data.poses.position, 2);
 nlandmarks = size(data.landmarks, 1);
 fprintf('Generate %d poses and %d landmarks\n', nposes, nlandmarks);
+
+% right iekf-slam
+RIEKF_result = RIEKF_SLAM( data );
+RIEKF_plot_estimation( RIEKF_result, data );
+RIEKF_plot_rms_nees( RIEKF_result, data );
 
 % left iekf-slam
 LIEKF_result = LIEKF_SLAM( data );

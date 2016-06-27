@@ -1,6 +1,5 @@
-function [RMS_position, RMS_orientation, NEES_pose, NEES_orientation] = EKF_plot_rms_nees( estimation_results, data, do_vis )
+function [RMS_position, RMS_orientation, NEES_pose, NEES_orientation] = RIEKF_plot_rms_nees( estimation_results, data, do_vis )
 % plot rms and nees for left-invariant ekf
-
 N  = size(estimation_results, 2);
 
 T = 1:N;
@@ -11,15 +10,22 @@ for i = T
     ap = data.poses.position(:,i);
     
     RMS_position = [RMS_position norm(position-ap)];
-    RMS_orientation=  [RMS_orientation norm(so3_log((data.poses.orientation(3*i-2:3*i,1:3))'*estimation_results{i}.orientation))];
+    RMS_orientation=  [RMS_orientation norm(so3_log(estimation_results{i}.orientation*(data.poses.orientation(3*i-2:3*i,1:3))'))];
        
 end
+
 fprintf( 'mean(RMS:Position) = %f\n', mean(RMS_position) );
 fprintf( 'mean(RMS:Orientation) = %f\n', mean(RMS_orientation) );
 
 
+if do_vis == 1
+    figure;
 
-
+    subplot(2,2,1);plot(T, RMS_position);
+    title('RMS:position(meter)');xlim([0,N]);
+    subplot(2,2,2); plot(T,RMS_orientation);
+    title('RMS:orientation(radius)');xlim([0,N]);
+end
 
 NEES_pose=[];
 NEES_orientation=[];
@@ -27,8 +33,8 @@ for i = T
     position = estimation_results{i}.position;   
     ap = data.poses.position(:,i);
     
-    dw=so3_log((data.poses.orientation(3*i-2:3*i,1:3))'*estimation_results{i}.orientation);
-    dv=( (estimation_results{i}.position-data.poses.position(:,i)));
+    dw=so3_log(estimation_results{i}.orientation*(data.poses.orientation(3*i-2:3*i,1:3))');
+    dv=inv(jaco_r(-dw))*( (estimation_results{i}.position-estimation_results{i}.orientation*data.poses.orientation(3*i-2:3*i,1:3)'*data.poses.position(:,i)));
     
 %     inFormation=inv(EstimationHistory{i}.cov);
 %     cov_o=inFormation(1:3,1:3);
@@ -45,15 +51,11 @@ for i = T
     NEES_pose=  [NEES_pose dP'*invcov_pose*dP/6];
        
 end
+
 fprintf( 'mean(NEES:Position) = %f\n', mean(NEES_pose(2:end)) );
 fprintf( 'mean(NEES:Orientation) = %f\n', mean(NEES_orientation(2:end)) );
 
 if do_vis == 1
-    figure;
-    subplot(2,2,1);plot(T, RMS_position);
-    title('RMS:position(meter)');xlim([0,N]);
-    subplot(2,2,2); plot(T,RMS_orientation);
-    title('RMS:orientation(radius)');xlim([0,N]);
     subplot(2,2,3);
     plot(T,NEES_orientation);
     title('NEES:orientation');xlim([0,N]);
@@ -61,5 +63,4 @@ if do_vis == 1
     plot(T,NEES_pose);
     title('NEES:pose');xlim([0,N]);
 end
-
 

@@ -9,7 +9,6 @@ end
 % addpath('Math_Liegroup/');
 
 % load pre-given data: odometry and observations
-load('data.mat');
 data_matrix = data.state;
 odo_cov = data.odom_cov;   % constant variable
 obs_cov = data.obse_cov;   % constant variable
@@ -38,7 +37,7 @@ estimation_results{1} = estimation_x;
 for i = 0:n_steps
     IndexOfCurrentStepInDataMatrix = find(data_matrix(:,4) == i); 
     m = size(IndexOfCurrentStepInDataMatrix, 1);
-    if ( mod(i, 10) == 0 )
+    if ( mod(i, 50) == 0 )
         disp(['Processing pose ', int2str(i)]);
     end
     % det(Estimation_X.cov)
