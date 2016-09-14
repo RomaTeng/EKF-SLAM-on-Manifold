@@ -1,4 +1,6 @@
-function [Estimation_X0] = EKF_update(Estimation_X0, CameraMeasurementThis, Sigma_OB)
+function [Estimation_X0] = REKF_update(Estimation_X0, CameraMeasurementThis, Sigma_OB)
+
+
 
 
 NumberOfLandmarksObInThisStep = size(CameraMeasurementThis,1)/3;
@@ -21,6 +23,9 @@ for i = 1:NumberOfLandmarksObInThisStep
         IndexObservedAlreadyThis = [IndexObservedAlreadyThis;CameraMeasurementThis(3*i,2)];
     end             
 end
+
+Estimation_X0.IndexObservedNew=IndexObservedNew;
+Estimation_X0.IndexObservedAlreadyThis=IndexObservedAlreadyThis;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IndexObservedNew=[78; 97; 18] indicates that the 
 % robot firstly observes landmarks 78 97 18 in this step
@@ -56,8 +61,8 @@ if ~isempty(IndexObservedAlreadyThis)
         ind2 = find(CameraMeasurementThis(:,2) == IndexObservedAlreadyThis(i));
         Z(3*i-2:3*i,1 ) = CameraMeasurementThis(ind2,1);
         
-        H(3*i-2:3*i, 1:6) = [-orientation'*skew(fi-position) orientation'];
-        H(3*i-2:3*i, 6+3*ind-2:6+3*ind) = -orientation';    
+        H(3*i-2:3*i, 4:6) = orientation';
+        H(3*i-2:3*i, 6+3*ind-2:6+3*ind) = -orientation';   
         R(3*i-2:3*i,3*i-2:3*i) = diag(CameraMeasurementThis(ind2,1).^2)*Sigma_OB^2;
     end    
     
@@ -67,12 +72,12 @@ if ~isempty(IndexObservedAlreadyThis)
     K = cov*H'*inv(S);
     s = K*z;
     
-    Estimation_X0 = SpecialAdd(Estimation_X0,-s);
+    Estimation_X0 = special_add_right(Estimation_X0,-s);
     cov = ( eye(6+3*NumberOfFeature) -K*H )*cov;
     Estimation_X0.cov = cov;
     
-    % @todo @RomaTeng, right Jacobian
-    %Estimation_X0.cov=JJJr(-s)*cov*(JJJr(-s))';
+    % @todo @RomaTeng, right Jacobian % No need for consistency
+    % Estimation_X0.cov=JJJr(s)*cov*(JJJr(s))';
 end  
      
 
@@ -93,16 +98,19 @@ if ~isempty(IndexObservedNew)
         nf = CameraMeasurementThis( m2, 1 );
 
         Estimation_X0.landmarks(1:3,NumberOfFeature+i) = Estimation_X0.orientation*nf+Estimation_X0.position;
-        KK( 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i,1:6 ) = [-skew(Estimation_X0.orientation*(nf)) eye(3)];  
-        KK (6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i, 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i )=Estimation_X0.orientation;
-                tempKK(3*i-2:3*i,3*i-2:3*i)=diag(nf.^2)*Sigma_OB^2;
+        KK( 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i,4:6 ) = eye(3);  
+        KK( 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i,6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i ) = Estimation_X0.orientation;
+    
+        tempKK(3*i-2:3*i,3*i-2:3*i)=diag(nf.^2)*Sigma_OB^2;
     end
-    Sigma   = blkdiag(Estimation_X0.cov,tempKK);
+        Sigma   = blkdiag(Estimation_X0.cov,tempKK);
     Estimation_X0.cov = KK*Sigma*KK';
 end
 
-
-
-
-clearvars -except Estimation_X0 CameraMeasurementThis obsv_sigma
 end
+  
+     
+     
+
+
+

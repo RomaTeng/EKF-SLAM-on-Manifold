@@ -1,6 +1,4 @@
-function [Estimation_X0] = EKF_update(Estimation_X0, CameraMeasurementThis, Sigma_OB)
-
-
+function [Estimation_X0,FirstLandmarks] = FEKF_update(Estimation_X0, CameraMeasurementThis, Sigma_OB , FirstLandmarks)
 NumberOfLandmarksObInThisStep = size(CameraMeasurementThis,1)/3;
 
 % initialise the IndexOfFeature if possible
@@ -37,6 +35,52 @@ NumberOfFeature = size( IndexOfFeature,1);
 NumberOfOldFeatureInThisStep = size(IndexObservedAlreadyThis,1);
 NumberOfNewFeatureInThisStep = size(IndexObservedNew,1);
  
+
+
+
+% update state vector and covariance by considering 
+% new feature into state and covariance
+if ~isempty(IndexObservedNew)
+    
+    orientation = Estimation_X0.orientation;
+    position    = Estimation_X0.position;
+    
+   % copy previous covariance
+    temp    = repmat({eye(3)}, NumberOfNewFeatureInThisStep, 1 );
+    tempKK  = blkdiag(temp{:});
+    Sigma   = blkdiag(Estimation_X0.cov,tempKK);
+    KK      = eye(6+3*(NumberOfFeature+NumberOfNewFeatureInThisStep));
+    
+ %   add new features
+    for i = 1:NumberOfNewFeatureInThisStep
+        indNewf = IndexObservedNew(i);
+        Estimation_X0.landmarks(4,NumberOfFeature+i) = indNewf;
+        m2 = find( CameraMeasurementThis(:,2) == indNewf );
+        nf = CameraMeasurementThis( m2, 1 );
+
+        Estimation_X0.landmarks(1:3,NumberOfFeature+i) = orientation*nf+position;
+        Newlandmark=[ orientation*nf+position;  indNewf  ];
+        
+        FirstLandmarks=[FirstLandmarks  Newlandmark];
+        
+%         KK( 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i,1:6 ) = [-skew(Estimation_X0.orientation*(nf)) eye(3)];  
+%         KK (6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i, 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i )=Estimation_X0.orientation;
+        
+         KK( 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i,1:6 ) = [-skew(orientation*(nf)) eye(3)];  
+        KK (6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i, 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i )=orientation;
+                tempKK(3*i-2:3*i,3*i-2:3*i)=diag(nf.^2)*Sigma_OB^2;
+    end
+    Sigma   = blkdiag(Estimation_X0.cov,tempKK);
+    Estimation_X0.cov = KK*Sigma*KK';
+       
+    NumberOfFeature=NumberOfFeature+NumberOfNewFeatureInThisStep;
+end
+
+
+orientation = Estimation_X0.orientation;
+position    = Estimation_X0.position;
+cov         = Estimation_X0.cov;
+
    
 % update state and covariance 
 if ~isempty(IndexObservedAlreadyThis)
@@ -47,16 +91,20 @@ if ~isempty(IndexObservedAlreadyThis)
     temp = repmat({eye(3)}, NumberOfOldFeatureInThisStep,1 );
     R = blkdiag(temp{:});
     
+    
     % update old features
     for i = 1:NumberOfOldFeatureInThisStep
         ind = find(IndexOfFeature == IndexObservedAlreadyThis(i));
+        
         fi  = Estimation_X0.landmarks(1:3,ind);
         Y(3*i-2:3*i,1) = ObservationModel( orientation, position, fi );
         
         ind2 = find(CameraMeasurementThis(:,2) == IndexObservedAlreadyThis(i));
         Z(3*i-2:3*i,1 ) = CameraMeasurementThis(ind2,1);
         
-        H(3*i-2:3*i, 1:6) = [-orientation'*skew(fi-position) orientation'];
+        FirstLandmark=FirstLandmarks(1:3,ind);
+        
+        H(3*i-2:3*i, 1:6) = [-orientation'*skew(FirstLandmark-position) orientation'];
         H(3*i-2:3*i, 6+3*ind-2:6+3*ind) = -orientation';    
         R(3*i-2:3*i,3*i-2:3*i) = diag(CameraMeasurementThis(ind2,1).^2)*Sigma_OB^2;
     end    
@@ -71,38 +119,13 @@ if ~isempty(IndexObservedAlreadyThis)
     cov = ( eye(6+3*NumberOfFeature) -K*H )*cov;
     Estimation_X0.cov = cov;
     
-    % @todo @RomaTeng, right Jacobian
-    %Estimation_X0.cov=JJJr(-s)*cov*(JJJr(-s))';
+   
 end  
      
 
-% update state vector and covariance by considering 
-% new feature into state and covariance
-if ~isempty(IndexObservedNew)
-    % copy previous covariance
-    temp    = repmat({eye(3)}, NumberOfNewFeatureInThisStep, 1 );
-    tempKK  = blkdiag(temp{:});
-    Sigma   = blkdiag(Estimation_X0.cov,tempKK);
-    KK      = eye(6+3*(NumberOfFeature+NumberOfNewFeatureInThisStep));
-    
-    % add new features
-    for i = 1:NumberOfNewFeatureInThisStep
-        indNewf = IndexObservedNew(i);
-        Estimation_X0.landmarks(4,NumberOfFeature+i) = indNewf;
-        m2 = find( CameraMeasurementThis(:,2) == indNewf );
-        nf = CameraMeasurementThis( m2, 1 );
 
-        Estimation_X0.landmarks(1:3,NumberOfFeature+i) = Estimation_X0.orientation*nf+Estimation_X0.position;
-        KK( 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i,1:6 ) = [-skew(Estimation_X0.orientation*(nf)) eye(3)];  
-        KK (6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i, 6+3*NumberOfFeature+3*i-2:6+3*NumberOfFeature+3*i )=Estimation_X0.orientation;
-                tempKK(3*i-2:3*i,3*i-2:3*i)=diag(nf.^2)*Sigma_OB^2;
-    end
-    Sigma   = blkdiag(Estimation_X0.cov,tempKK);
-    Estimation_X0.cov = KK*Sigma*KK';
-end
+     
+     
 
 
 
-
-clearvars -except Estimation_X0 CameraMeasurementThis obsv_sigma
-end

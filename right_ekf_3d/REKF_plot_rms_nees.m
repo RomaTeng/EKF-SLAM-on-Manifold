@@ -1,5 +1,5 @@
-function [RMS_position, RMS_orientation, NEES_pose, NEES_orientation] = EKF_plot_rms_nees( estimation_results, data, do_vis )
-% plot rms and nees for left-invariant ekf
+function [RMS_position, RMS_orientation, NEES_pose, NEES_orientation] = REKF_plot_rms_nees( estimation_results, data, do_vis )
+% plot rms and nees for R-EKF
 N  = size(estimation_results, 2);
 
 T = 1:N;
@@ -36,13 +36,10 @@ for i = T
     dw=so3_log(estimation_results{i}.orientation*(data.poses.orientation(3*i-2:3*i,1:3))');
     dv=inv(jaco_r(-dw))*( (estimation_results{i}.position-estimation_results{i}.orientation*data.poses.orientation(3*i-2:3*i,1:3)'*data.poses.position(:,i)));
     
-%     inFormation=inv(EstimationHistory{i}.cov);
-%     cov_o=inFormation(1:3,1:3);
-%     cov_pose=inFormation(1:6,1:6);
+
      cov_o=estimation_results{i}.cov(1:3,1:3);
      cov_pose=estimation_results{i}.cov(1:6,1:6);
-%      cov_pose(1:3,4:6)=zeros(3,3);
-%      cov_pose(4:6,1:3)=zeros(3,3);
+
      invcov_o=eye(3)/cov_o;
      invcov_pose=eye(6)/cov_pose;
     dP=[dw;dv];

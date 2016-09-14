@@ -1,35 +1,30 @@
 % comparison of following methods in 3D environment
-% - left IEKF-SLAM 
-% - right IEKF-SLAM
-% - EKF-SLAM
-% - ideal EKF-SLAM
+% - FEKF SLAM 
+% - FEJ-EKF SLAM
+% - EKF SLAM
 clear;
 clc;
 close all;
 % add directories
 addpath('datagen_3d/');
-addpath('left_iekf_3d/');
-addpath('right_iekf_3d/');
+addpath('f_ekf_3d/');
+addpath('right_ekf_3d/');
 addpath('lie_utils/');
 addpath('ekf_3d/');
-addpath('ideal_ekf_3d/');
 % generate simulation data
-niter = 50;
-nsteps = 200;
-RIEKF_RMS.position = [];
-RIEKF_RMS.orientation = [];
-RIEKF_NEES.pose = [];
-RIEKF_NEES.orientation = [];
+niter = 1;
+nsteps = 400;
+REKF_RMS.position = [];
+REKF_RMS.orientation = [];
+REKF_NEES.pose = [];
+REKF_NEES.orientation = [];
 
-LIEKF_RMS.position = [];
-LIEKF_RMS.orientation = [];
-LIEKF_NEES.pose = [];
-LIEKF_NEES.orientation = [];
+FEKF_RMS.position = [];
+FEKF_RMS.orientation = [];
+FEKF_NEES.pose = [];
+FEKF_NEES.orientation = [];
 
-Ideal_EKF_RMS.position = [];
-Ideal_EKF_RMS.orientation = [];
-Ideal_EKF_NEES.pose = [];
-Ideal_EKF_NEES.orientation = [];
+
 
 EKF_RMS.position = [];
 EKF_RMS.orientation = [];
@@ -44,82 +39,61 @@ for i = 1:niter
     nlandmarks = size(data.landmarks, 1);
     fprintf('Generate %d poses and %d landmarks\n', nposes, nlandmarks);
     
-    % right iekf-slam
-    RIEKF_result = RIEKF_SLAM( data );
-    % RIEKF_plot_estimation( RIEKF_result, data );
-    [RIEKF_RMS.position(i, :), RIEKF_RMS.orientation(i, :), RIEKF_NEES.pose(i, :), RIEKF_NEES.orientation(i, :)] = ...
-        RIEKF_plot_rms_nees( RIEKF_result, data, 0 );
+    REKF_result = REKF_SLAM( data );
+    [REKF_RMS.position(i, :), REKF_RMS.orientation(i, :), REKF_NEES.pose(i, :), REKF_NEES.orientation(i, :)] = ...
+        REKF_plot_rms_nees( REKF_result, data, 0 );
     
-    % left iekf-slam
-    LIEKF_result = LIEKF_SLAM( data );
-    % LIEKF_plot_estimation( LIEKF_result, data );
-    [LIEKF_RMS.position(i, :), LIEKF_RMS.orientation(i, :), LIEKF_NEES.pose(i, :), LIEKF_NEES.orientation(i, :)] = ...
-        LIEKF_plot_rms_nees( LIEKF_result, data, 0 );
+    FEKF_result = FEKF_SLAM( data );
+    [FEKF_RMS.position(i, :), FEKF_RMS.orientation(i, :), FEKF_NEES.pose(i, :), FEKF_NEES.orientation(i, :)] = ...
+        FEKF_plot_rms_nees( FEKF_result, data, 0 );
     
-    % ideal ekf-slam
-    Ideal_EKF_result = Ideal_EKF_SLAM( data );
-    % Ideal_EKF_plot_estimation( Ideal_EKF_result, data );
-    [Ideal_EKF_RMS.position(i, :), Ideal_EKF_RMS.orientation(i, :), Ideal_EKF_NEES.pose(i, :), Ideal_EKF_NEES.orientation(i, :)] = ...
-        Ideal_EKF_plot_rms_nees( Ideal_EKF_result, data, 0 );
-    
-    % ekf-slam
+
     EKF_result = EKF_SLAM( data );
-    % EKF_plot_estimation( EKF_result, data );
     [EKF_RMS.position(i, :), EKF_RMS.orientation(i, :), EKF_NEES.pose(i, :), EKF_NEES.orientation(i, :)] = ...
         EKF_plot_rms_nees( EKF_result, data, 0 );
     toc;
     
 end
 
-[RIEKF_RMS_ave, RIEKF_NEES_ave] = compute_rms_nees_ave( RIEKF_RMS, RIEKF_NEES );
-[LIEKF_RMS_ave, LIEKF_NEES_ave] = compute_rms_nees_ave( LIEKF_RMS, LIEKF_NEES );
-[Ideal_EKF_RMS_ave, Ideal_EKF_NEES_ave] = compute_rms_nees_ave( Ideal_EKF_RMS, Ideal_EKF_NEES );
+[REKF_RMS_ave, REKF_NEES_ave] = compute_rms_nees_ave( REKF_RMS, REKF_NEES );
+[FEKF_RMS_ave, FEKF_NEES_ave] = compute_rms_nees_ave( FEKF_RMS, FEKF_NEES );
 [EKF_RMS_ave, EKF_NEES_ave] = compute_rms_nees_ave( EKF_RMS, EKF_NEES );
 
 figure;
 %subplot(2,2,1);
-plot(1:size(RIEKF_RMS_ave.position, 2), RIEKF_RMS_ave.position, 'r'); hold on;
-plot(1:size(LIEKF_RMS_ave.position, 2), LIEKF_RMS_ave.position, 'g'); hold on;
-plot(1:size(Ideal_EKF_RMS_ave.position, 2), Ideal_EKF_RMS_ave.position, 'b'); hold on;
+plot(1:size(REKF_RMS_ave.position, 2), REKF_RMS_ave.position, 'r'); hold on;
+plot(1:size(FEKF_RMS_ave.position, 2), FEKF_RMS_ave.position, 'g'); hold on;
 plot(1:size(EKF_RMS_ave.position, 2), EKF_RMS_ave.position, 'k'); hold on;
-legend('R-EKF', 'L-EKF', 'Ideal EKF', 'EKF', 'Location','northeast');
-title('RMS:position(meter)');xlim([0,size(RIEKF_RMS_ave.position, 2)]);
+legend('R-EKF', 'FEJ-EKF', 'EKF', 'Location','northeast');
+title('RMS:position(meter)');xlim([0,size(REKF_RMS_ave.position, 2)]);
 
 figure;
-%subplot(2,2,2); 
-plot(1:size(RIEKF_RMS_ave.orientation, 2), RIEKF_RMS_ave.orientation, 'r'); hold on;
-plot(1:size(LIEKF_RMS_ave.orientation, 2), LIEKF_RMS_ave.orientation, 'g'); hold on;
-plot(1:size(Ideal_EKF_RMS_ave.orientation, 2), Ideal_EKF_RMS_ave.orientation, 'b'); hold on;
+plot(1:size(REKF_RMS_ave.orientation, 2), REKF_RMS_ave.orientation, 'r'); hold on;
+plot(1:size(FEKF_RMS_ave.orientation, 2), FEKF_RMS_ave.orientation, 'g'); hold on;
 plot(1:size(EKF_RMS_ave.orientation, 2), EKF_RMS_ave.orientation, 'k'); hold on;
-legend('R-EKF', 'L-EKF', 'Ideal EKF', 'EKF', 'Location','northeast');
-title('RMS:orientation(rad)');xlim([0,size(RIEKF_RMS_ave.orientation, 2)]);
+legend('R-EKF', 'FEJ-EKF',  'EKF', 'Location','northeast');
+title('RMS:orientation(rad)');xlim([0,size(REKF_RMS_ave.orientation, 2)]);
 
 figure;
-%subplot(2,2,3);
-semilogy(1:size(RIEKF_NEES_ave.orientation, 2), RIEKF_NEES_ave.orientation, 'r'); hold on;
-semilogy(1:size(LIEKF_NEES_ave.orientation, 2), LIEKF_NEES_ave.orientation, 'g'); hold on;
-semilogy(1:size(Ideal_EKF_NEES_ave.orientation, 2), Ideal_EKF_NEES_ave.orientation, 'b'); hold on;
+semilogy(1:size(REKF_NEES_ave.orientation, 2), REKF_NEES_ave.orientation, 'r'); hold on;
+semilogy(1:size(FEKF_NEES_ave.orientation, 2), FEKF_NEES_ave.orientation, 'g'); hold on;
 semilogy(1:size(EKF_NEES_ave.orientation, 2), EKF_NEES_ave.orientation, 'k'); hold on;
-legend('R-EKF', 'L-EKF', 'Ideal EKF', 'EKF', 'Location','northeast');
-title('NEES:orientation');xlim([0,size(RIEKF_NEES_ave.orientation, 2)]);
+legend('R-EKF', 'FEJ-EKF', 'EKF', 'Location','northeast');
+title('NEES:orientation');xlim([0,size(REKF_NEES_ave.orientation, 2)]);
 
 figure;
-%subplot(2,2,4);
-semilogy(1:size(RIEKF_NEES_ave.pose, 2), RIEKF_NEES_ave.pose, 'r'); hold on;
-semilogy(1:size(LIEKF_NEES_ave.pose, 2), LIEKF_NEES_ave.pose, 'g'); hold on;
-semilogy(1:size(Ideal_EKF_NEES_ave.pose, 2), Ideal_EKF_NEES_ave.pose, 'b'); hold on;
+semilogy(1:size(REKF_NEES_ave.pose, 2), REKF_NEES_ave.pose, 'r'); hold on;
+semilogy(1:size(FEKF_NEES_ave.pose, 2), FEKF_NEES_ave.pose, 'g'); hold on;
 semilogy(1:size(EKF_NEES_ave.pose, 2), EKF_NEES_ave.pose, 'k'); hold on;
-legend('R-EKF', 'L-EKF', 'Ideal EKF', 'EKF', 'Location','northeast');
-title('NEES:pose');xlim([0,size(RIEKF_NEES_ave.pose, 2)]);
+legend('R-EKF', 'FEJ-EKF', 'EKF', 'Location','northeast');
+title('NEES:pose');xlim([0,size(REKF_NEES_ave.pose, 2)]);
 
 fprintf('Mean values:\n');
 fprintf('           RMS-Position    RMS-Orientation     NEES-Pose   NEES-Orientation\n');
 fprintf('R-EKF:          %.5f            %.5f       %.5f           %.5f\n', ...
-    mean(RIEKF_RMS_ave.position), mean(RIEKF_RMS_ave.orientation), mean(RIEKF_NEES_ave.pose), mean(RIEKF_NEES_ave.orientation));
-fprintf('L-EKF:          %.5f            %.5f       %.5f           %.5f\n', ...
-    mean(LIEKF_RMS_ave.position), mean(LIEKF_RMS_ave.orientation), mean(LIEKF_NEES_ave.pose), mean(LIEKF_NEES_ave.orientation));
-fprintf('Ideal-EKF:      %.5f            %.5f       %.5f           %.5f\n', ...
-    mean(Ideal_EKF_RMS_ave.position), mean(Ideal_EKF_RMS_ave.orientation), mean(Ideal_EKF_NEES_ave.pose), mean(Ideal_EKF_NEES_ave.orientation));
+    mean(REKF_RMS_ave.position), mean(REKF_RMS_ave.orientation), mean(REKF_NEES_ave.pose), mean(REKF_NEES_ave.orientation));
+fprintf('FEJ-EKF:          %.5f            %.5f       %.5f           %.5f\n', ...
+    mean(FEKF_RMS_ave.position), mean(FEKF_RMS_ave.orientation), mean(FEKF_NEES_ave.pose), mean(FEKF_NEES_ave.orientation));
 fprintf('EKF:            %.5f            %.5f      %.5f          %.5f\n', ...
     mean(EKF_RMS_ave.position), mean(EKF_RMS_ave.orientation), mean(EKF_NEES_ave.pose), mean(EKF_NEES_ave.orientation));
 
