@@ -1,6 +1,10 @@
 # EKF-SLAM-on-Manifold
 
 ------------------------
+
+__UNDER CONSTRUCTION, COMING SOON__
+
+
 This is a joint work by Teng Zhang, Jingwei Song, [Kanzhi Wu](kanzhi.me), Shoudong Huang and Gamini Dissanayake.
 
 The document is the paper "convergence and consistency for a Lie group based 3D EKF SLAM" (full version).
@@ -18,17 +22,17 @@ Simulation settings can be tuned into "./datagen_3d":
 
 
 If you want to test a simple case:
-for example, 
-(1)   run "./datagen_3d/gen_data.m" to generate "data.mat"(all measurements and ground truth) 
+for example,
+(1)   run "./datagen_3d/gen_data.m" to generate "data.mat"(all measurements and ground truth)
 (2)   copy this "data.mat" into the foler "./right_ekf_3d.m" or "./f_ekf_3d.m" or "./ekf_3d.m"
 (3)   run "REKF_SLAM.m" or "FEKF_SLAM.m" or "EKF_SLAM.m"    and get the simulation test
 
 
 If you want to test a simple test for three filters:
-for example, 
+for example,
 (1)   run "./comparison_3d.m" and the comparsion will be displayed
 
 
 If you want to perform Monte Carlo test for three filters:
-for example, 
+for example,
 (1)   run "./multi_comparison_3d.m" and the comparsion will be displayed
