@@ -4,7 +4,7 @@
 
 __UNDER CONSTRUCTION, COMING SOON__
 
-This repository is for "Convergence and Consistency for a Lie Group based 3D EKF SLAM" submitted to RA-L and ICRA 2017.
+This repository is for "Convergence and Consistency Analysis for a Lie Group based 3D EKF SLAM" submitted to RA-L and ICRA 2017.
 
 This is a joint work by Teng Zhang, [Kanzhi Wu](http://kanzhi.me/), Jingwei Song, Shoudong Huang and Gamini Dissanayake.
 
