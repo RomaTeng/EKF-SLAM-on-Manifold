@@ -1,7 +1,8 @@
 function [ Vehicle ] = gen_trajectory( t )
 
      radius = 10;   
-    Vehicle.position = radius* [ 5*cos(0.3*t); 4*sin(0.2*t); 2*sin(0.2*t+1) ];
+    Vehicle.position = radius* [ 5*cos(0.3*t/4); 4*sin(0.2*t/4); 2*sin(0.2*t/4+1) ];
+    %Vehicle.position = radius* [ 5*cos(0.03*t); 4*sin(0.02*t); 2*sin(0.02*t+1) ];
     Vehicle.euler = [0.5*t+2; -0.3*t; 0.4*t];
     
 
