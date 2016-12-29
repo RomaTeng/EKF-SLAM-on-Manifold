@@ -3,9 +3,8 @@
 ------------------------
 This is a joint work by Teng Zhang, [Kanzhi Wu](kanzhi.me), Shoudong Huang and Gamini Dissanayake.
 
-The document is the paper "convergence and consistency for a Lie group based 3D EKF SLAM" (full version).
+The document is the paper "Convergence and Consistency for An Invariant-EKF 3D SLAM".
 Fortunately, this paper has been accepted by Robotics and Automation Letters.
-The lastest version is coming soon with some bug fix.
 
 
 
