@@ -1,9 +1,13 @@
 # EKF-SLAM-on-Manifold
 
 ------------------------
-This is a joint work by Teng Zhang, Jingwei Song, [Kanzhi Wu](kanzhi.me), Shoudong Huang and Gamini Dissanayake.
+This is a joint work by Teng Zhang, [Kanzhi Wu](kanzhi.me), Shoudong Huang and Gamini Dissanayake.
 
 The document is the paper "convergence and consistency for a Lie group based 3D EKF SLAM" (full version).
+Fortunately, this paper has been accepted by Robotics and Automation Letters.
+The lastest version is coming soon with some bug fix.
+
+
 
 __This repository is for code release only!__
 __Under construction__
