@@ -3,7 +3,7 @@
 ------------------------
 This is a joint work by Teng Zhang, [Kanzhi Wu](kanzhi.me), Shoudong Huang and Gamini Dissanayake.
 
-The document is the paper "Convergence and Consistency for An Invariant-EKF 3D SLAM".
+The document is the paper "Convergence and Consistency for A 3D Invariant-EKF SLAM".
 Fortunately, this paper has been accepted by Robotics and Automation Letters.
 
 
